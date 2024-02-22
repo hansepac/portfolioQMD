@@ -22,8 +22,10 @@ format:
         source: false
         toggle: true
         caption: See code
-    
 ---
+
+::: {.panel-tabset}
+
 
 ## R / RStudio
 
@@ -38,7 +40,7 @@ library(reticulate)
 ### ggplot2
 
 
-```{r}
+```{r, fig.height=5, fig.width=5}
 #| code-summary: Data manipulation + boxplot code
 food <- read_csv("data/food.csv")
 
@@ -99,9 +101,78 @@ ggplot(food2, aes(x=parent_education, y=GPA)) +
 To see full analysis this chart was used in:
 [College GPA vs Parental Education](analyses/Food.html)
 
+
+#### Visualization Recreation
+
+Mimicing a visualization from [Our World in Data](https://ourworldindata.org/grapher/fruit-consumption-vs-gdp-per-capita?time=latest)
+
+![Original Graph](img/fruit.png)
+
+My Recreation:
+
+```{r, fig.height=4, fig.width=8}
+fruit <- read_csv("data/fruit.csv")
+colnames(fruit) <- c('Entity', 'Code', 'Year', 'Fruit', 'GDP', 'Continent')
+
+continent <- fruit %>% 
+  filter(!is.na(Code)) %>% 
+  group_by(Entity) %>% 
+  fill(Continent, .direction='downup') %>% 
+  ungroup()
+
+library(ggrepel)
+year <- continent %>% 
+  filter(Year == 2020)
+
+country5 <- year %>% 
+  filter(Entity %in% c('Dominica',
+                       'Dominican Republic',
+                       'Guyana',
+                       'Albania',
+                       'Papua New Guinea',
+                       'Ghana'))
+
+ggplot(year, aes(x=GDP, y=Fruit, color=Continent)) +
+  geom_point(size=2, shape=1, color='gray70') +
+  geom_point(alpha=0.85) + 
+  scale_x_continuous(trans='log',
+                     breaks=c(1000, 2000, 5000, 10000, 20000, 50000, 100000),
+                     labels=c("$1,000", "$2,000", "$5,000", "$10,000", "$20,000", "$50,000", "$100,000")) +
+  scale_y_continuous(limits = c(0,400),
+                     expand = c(0,0),
+                     breaks=seq(0, 350, 50),
+                     labels=c('0 kg', '50 kg', '100 kg',
+                              '150 kg', '200 kg', '250 kg',
+                              '300 kg', '350 kg')) +
+  scale_color_manual(values = c('Africa' = "#9B559D",
+                                'Asia' = "#32847E",
+                                'Europe' = "#536A9D",
+                                'North America' = "#D96C58",
+                                'Oceania' = "#925026",
+                                'South America' = "#802F39"))+
+  guides(color = guide_legend(override.aes = list(shape=15, alpha=1,size=3),
+                              keyheight = 0.9,
+                              keywidth = 0)) +
+  labs(title="Fruit consumption vs. GDP per capita,  2020",
+       subtitle="Average per capita fruit consumption, measured in kilograms per year versus\ngross domestic product (GDP) per capita, measured in constant international-$",
+       x="GDP per capita",
+       y="Fruit supply per person") +
+  theme_classic() +
+  theme(
+    panel.grid.major = element_line(linetype='dotted', color='gray70'),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(size=0.25),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    legend.justification = c(1,1),
+    axis.title.x = element_text(vjust=-1),
+    axis.title.y = element_text(vjust=4)
+  )
+```
+
+
 ### plotly - Interactive Graphs
-
-
 
 ```{r}
 #| code-summary: plotly code
@@ -213,3 +284,9 @@ best_airport = alt.Chart(totals,
 best_airport
 
 ```
+
+## Studies Referenced in Resume
+
+- [Predicting Happiness](consulting.html)
+
+:::

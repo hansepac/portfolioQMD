@@ -1,0 +1,369 @@
+---
+title: "Data Consulting Report"
+author: "Hans Capener"
+execute:
+    warning: false
+format:
+  html:
+    math-method: mathml
+    self-contained: true
+    page-layout: full
+    theme: cerulean
+    title-block-banner: true
+    toc-depth: 3
+    toc-location: body
+    number-sections: false
+    html-math-method: katex
+    code-fold: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+    code-copy: hover
+    code-tools:
+        source: false
+        toggle: true
+        caption: See code
+---
+
+### ABSTRACT
+
+The General Social Survey (GSS) releases an extensive survey every year with 500+ questions. Among these is the question "would you say that you are very happy, pretty happy, or not too happy?". Using certain other questions in the survey, I created a Happy Rating to predict whether or not someone considers themselves to be happy. This correlation between my rating and how one rates one's own happiness is very significant, with a p-value of almost 0 (less than 2e-16). Utilizing the same features in the Happy Rating, I fit a model to predict with 83% accuracy whether or not someone is happy.
+
+::: panel-tabset
+
+# RESULTS
+
+## LOGISTIC REGRESSION
+
+```{r}
+#| code-summary: Happy Rating and Logistic Regression
+library(haven)
+library(mosaic)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(pander)
+gss2021 <- read_sas("data/gss2021.sas7bdat", 
+    NULL)
+
+# Filter Data and Create Happy_Rating
+mygss <- gss2021 %>% 
+  select(c('HAPPY', 'HAPMAR','LIFE', 'SATSOC', 'HLTHMNTL', 'ACTSSOC', 'HEALTH', 'EMOPROBS', 'ATTEND', 'EDUC', 'RELACTIV', 'HLTHPHYS')) %>% 
+  filter(!is.na(HAPPY)) %>% # Drop NA rows in the "HAPPY" column
+  mutate( # Merge "Pretty Happy" and "Very Happy" columns to just be "Happy" ~ 1
+    HAPPY = case_when(
+      HAPPY %in% c(1,2) ~ 1,
+      HAPPY %in% 3 ~ 0
+    )
+  ) %>% 
+  mutate_all(~ifelse(is.na(.), mean(., na.rm = TRUE), .)) %>% # Fill NA with mean()
+  mutate_all(~ . / max(.)) %>%  # Divide each column by its max value
+  mutate( # Invert scale on questions that had inverse numbered answers
+    ATTEND = ATTEND * -1 + 1,
+    RELACTIV = RELACTIV * -1 + 1,
+    EDUC = EDUC * -1 + 1,
+  ) %>% 
+  mutate( # Scale each factor to match its importance in the ML
+    Happy_Rating = -100 * (EDUC * 0.15426218 +
+                   ATTEND * 0.12488643 +
+                   HAPMAR * 0.11542531 +
+                   RELACTIV * 0.11377695 +
+                   SATSOC * 0.08842675 +
+                   EMOPROBS * 0.08201357 +
+                   LIFE * 0.07298428 +
+                   ACTSSOC * 0.06718067 +
+                   HLTHMNTL * 0.06597608 +
+                   HLTHPHYS * 0.06001798 +
+                   HEALTH * 0.05504979) + 100, 
+    Happy_Rating_Unscaled = -10 * (EDUC +
+                   ATTEND + HAPMAR +
+                   RELACTIV + SATSOC +
+                   EMOPROBS + LIFE +
+                   ACTSSOC + HLTHMNTL +
+                   HLTHPHYS + HEALTH) + 100
+  )
+
+# Run Logistic Regression
+gss.glm <- glm(HAPPY ~ Happy_Rating, data = mygss, family=binomial)
+
+# Graph Logistic Regression
+palette(c(rgb(1,0,0, alpha =0.05),rgb(0,0,1, alpha =0.05)))
+plot(HAPPY ~ Happy_Rating, data = mygss, col=as.factor(HAPPY), pch=16, cex=2, xlab = "Happy Rating", ylab = "Are you Happy?", main = "Can You Predict Whether or not Someone is Happy?")
+b <- coef(gss.glm)
+curve(exp(b[1] +b[2]*x)/(1+exp(b[1] +b[2]*x)), add=TRUE)
+legend(x=65, y=0.65, legend = c("Yes", "No"), col = c('blue', 'red'), pch = 16, title = "Are you Happy?")
+```
+
+There is a significant relationship between this custom happiness rating and whether or not someone is happy.
+
+## HAPPY RATING FACTORS
+
+Rated top down by importance as found by machine learning model (Note: one or two of these features may shift in importance depending on the specific iteration of the RandomForestClassifier Model)
+
+1. Years of Education
+2. Attendance of Religious Services
+3. Happiness of Marriage
+4. Attendance of Religious Activities
+5. Satisfaction in social activities and relationships
+6. Frequency of Emotional Problems
+7. How exciting or dull life is
+8. Ability to carry out social activities
+9. Mental Health
+10. Physical Health
+11. General Health
+
+```{python}
+#| code-summary: Machine Learning Model and Feature Importances Graph
+# Import Libraries
+import pandas as pd
+import altair as alt
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+
+# Import SAS Dataset
+dat = pd.read_sas('data\gss2021.sas7bdat')
+
+# Drop NaN Values in HAPPY column
+dat.dropna(subset=['HAPPY'], inplace=True)
+
+# Drop all columns that are all NA values
+dat.dropna(axis=1, how='all', inplace=True)
+
+# Filter dataset to just needed columns
+new_dat = dat.filter(['HAPPY', 'HAPMAR', 'LIFE', 'SATSOC', 'HLTHMNTL', 'ACTSSOC', 'HEALTH', 'EMOPROBS', 'ATTEND', 'EDUC', 'RELACTIV', 'HLTHPHYS'], axis=1)
+
+# Fill the remaining NaN values with the mean of each of the columns
+new_dat.fillna(new_dat.mean(), inplace=True)
+
+# Convert HAPPY to two categories, Happy and Unhappy
+def happy_filter(df):
+    if df >= 2:
+        return 1
+    if df == 1:
+        return 0
+fix_happy = new_dat.HAPPY.astype(int).apply(happy_filter)
+
+# Split data into train and test groups
+x = new_dat.drop('HAPPY', axis=1)
+y = fix_happy
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size= .2, random_state= 1234)
+
+# Fit RandomForestClassifier
+clf_rf = RandomForestClassifier().fit(x_train, y_train)
+
+# Graph feature importances
+feature_df = pd.DataFrame({'features':x.columns, 'importance':clf_rf.feature_importances_})
+
+chart = alt.Chart(feature_df).encode(
+    x = alt.X('importance'),
+    y = alt.Y('features', sort='-x')
+).mark_bar()
+chart
+```
+
+Training the Random Forest Classifier with the selected factors trains a model with the following accuracy:
+```{python}
+#| code-summary: Model Accuracy
+y_pred_rf = clf_rf.predict(x_test)
+accuracy_rf = metrics.accuracy_score(y_pred_rf, y_test)
+print(f"RandomForest: {accuracy_rf}")
+```
+
+Both our machine learning model and logistic regression show a clear trend with these factors.
+
+## CONCLUSIONS
+
+It is very interesting, that of all these traits, Physical, Mental, and general Health are the least predictive in one's happiness; more important than all of those is Education, Religion, and the relationships we have with others. Taking a step back, we can conclude that one's health, relationships, education, religion, and social activites are key indicators for one's happiness.
+
+# LOGISTIC REGRESSION
+
+## Hypothesis
+
+Using a Logistic Regression, we can determine if this custom Happiness Rating is a significant factor of one's happiness. If rating is a significant factor, it can be used in the future to predict one's happiness without needing to ask the question. We will have a significance level of $\alpha = 0.05$ and use the following model:
+
+$$
+  \underbrace{P(Y_i = 1|\, x_i)}_\text{Probability person is happy} = \frac{e^{\beta_0 + \beta_1 x_i}}{1+e^{\beta_0 + \beta_1 x_i}} = \pi_i
+$$
+
+Our hypothesis are related to the $\beta_1$ term, which tells us if there is a relationship between the rating and happiness. $\beta_0$ doesn't provide much insight in this context, because knowing the happiness of a person with zero happy rating isn't needed for our objective.
+
+
+$H_0: \beta_1 = 0$
+
+$H_a: \beta_1 \neq 0$
+
+Performing the Logistic Regression gives us the following results:
+
+## Logistic Regression Summary
+```{r}
+#| code-summary: Graph
+palette(c(rgb(1,0,0, alpha =0.05),rgb(0,0,1, alpha =0.05)))
+plot(HAPPY ~ Happy_Rating, data = mygss, col=as.factor(HAPPY), pch=16, cex=2, xlab = "Happy Rating", ylab = "Are you Happy?", main = "Can You Predict Whether or not Someone is Happy?")
+b <- coef(gss.glm)
+curve(exp(b[1] +b[2]*x)/(1+exp(b[1] +b[2]*x)), add=TRUE)
+legend(x=65, y=0.65, legend = c("Yes", "No"), col = c('blue', 'red'), pch = 16, title = "Are you Happy?")
+```
+
+There is a clear trend in our regression, and such a trend is backed by our low p-value (see table below). We can gain insights about our Happy Rating by looking at the value $e^{\beta_1}$, which in this case is $\approx 1.088$. This tells us that for each 5 points of the happy rating, our odds of happiness is 5.4 times as likely.
+
+```{r}
+#| code-summary: Regression Summary
+summary(gss.glm) %>%
+    pander(caption="Logistic Regression Summary")
+```
+
+Looking at our p-values, there is sufficient evidence to reject our null hypothesis. There is a significant relationship between our custom Happy Rating and one's happiness.
+
+
+## Goodness of Fit test
+
+Due to there being 111 repeated values in our Happy Rating data, we will use the Deviance Goodness-of-fit Test to determine if this model is a good fit for our data:
+
+```{r}
+#| code-summary: Deviance Goodness-of-fit Test
+pchisq(3876.3, 4012, lower.tail=FALSE) %>%
+    pander(caption="P-value for Deviance Goodness-of-fit Test")
+```
+
+With a p-value of 0.9364, we can conclude that this model is a good fit for our data.
+
+
+# RATING DERIVATION
+
+## Survey Questions
+Each of the following Questions have the following answer options:
+
+- 1 - Excellent
+- 2 - Very Good
+- 3 - Good
+- 4 - Fair
+- 5 - Poor
+
+SATSOC - In general, how would you rate your satisfaction with your social activities and relationships?
+
+HLTHMNTL - In general, how would you rate your mental health, including your mood and your ability to think?
+
+ACTSSOC - In general, please rate how well you carry out your usual social activities and roles. (This includes activities at home, at work and in your community, and responsibilities as a parent, child, spouse, employee, friend, etc.)
+
+HLTHPHYS - In general, how would you rate your physical health?
+
+HEALTH: 1 - 4 (no very good) - Would you say your own health, in general, is excellent, good, fair, or  poor?
+
+----
+
+EMOPROBS - In the past seven days, how often have you been bothered by emotional problems such as feeling anxious, depressed or irritable?
+
+- 1 - Never
+- 2 - Rarely
+- 3 - Sometimes
+- 4 - Often
+- 5 - Always
+
+----
+
+LIFE - In general, do you find life exciting, pretty routine, or dull?
+
+1 - Exciting
+2 - Routine
+3 - Dull
+
+----
+
+ATTEND - How often do you attend religious services?
+
+- 0 - Never
+- 1 - Less than once a year
+- 2 - About once or twice a year
+- 3 - Several times a year
+- 4 - About once a month
+- 5 - 2-3 times a month
+- 6 - Nearly every week
+- 7 - Every week
+- 8 - Several times a week
+
+----
+
+RELACTIV - How often do you take part in the activities and organizations of a church or place of worship other than attending services?
+
+- 1 - Never
+- 2 - Less than once a year
+- 3 - About once or twice a year
+- 4 - Several times a year
+- 5 - About once a month
+- 6 - 2-3 times a month
+- 7 - Nearly every week
+- 8 - Every week
+- 9 - Several times a week
+- 10 - Once a day
+- 11 - Several times a day
+
+----
+
+EDUC - Highest year of education?
+
+- 0 - 20 Years
+
+----
+
+HAPMAR - Would you say that your marriage is very happy, pretty happy, or not too happy?
+
+- 1 - Very Happy
+- 2 - Pretty Happy
+- 3 - Not too Happy
+
+----
+
+## Turning Questions into Happy Rating
+
+```r
+# SELECT COLUMNS
+mygss <- gss2021 %>% 
+  select(c('HAPPY', 'HAPMAR','LIFE', 'SATSOC', 'HLTHMNTL', 'ACTSSOC', 'HEALTH', 'EMOPROBS', 'ATTEND', 'EDUC', 'RELACTIV', 'HLTHPHYS')) %>% 
+# Drop NA rows in the "HAPPY" column
+  filter(!is.na(HAPPY)) %>% 
+# Merge "Pretty Happy" and "Very Happy" columns to just be "Happy" ~ 1
+  mutate(
+    HAPPY = case_when(
+      HAPPY %in% c(1,2) ~ 1,
+      HAPPY %in% 3 ~ 0
+    )) %>% 
+# Fill NA with mean()
+  mutate_all(~ifelse(is.na(.), mean(., na.rm = TRUE), .)) %>%
+# Divide each column by its max value
+  mutate_all(~ . / max(.)) %>%  
+# Invert scale on questions that had inverse numbered answers
+  mutate( 
+    ATTEND = ATTEND * -1 + 1,
+    RELACTIV = RELACTIV * -1 + 1,
+    EDUC = EDUC * -1 + 1,
+  ) %>% 
+# Scale each factor to match its importance in the ML
+  mutate( 
+    Happy_Rating = -100 * (EDUC * 0.15426218 +
+                   ATTEND * 0.12488643 +
+                   HAPMAR * 0.11542531 +
+                   RELACTIV * 0.11377695 +
+                   SATSOC * 0.08842675 +
+                   EMOPROBS * 0.08201357 +
+                   LIFE * 0.07298428 +
+                   ACTSSOC * 0.06718067 +
+                   HLTHMNTL * 0.06597608 +
+                   HLTHPHYS * 0.06001798 +
+                   HEALTH * 0.05504979) + 100, 
+    Happy_Rating_Unscaled = -10 * (EDUC +
+                   ATTEND + HAPMAR +
+                   RELACTIV + SATSOC +
+                   EMOPROBS + LIFE +
+                   ACTSSOC + HLTHMNTL +
+                   HLTHPHYS + HEALTH) + 100
+  )
+```
+
+## Scaled vs Unscaled Happy Rating
+
+Two happy ratings were created, one with each factor scaled to match the rank of importance found in from the Random Forest Classifier. One interesting note, is that both the scaled and unscaled Happy Rating had a $\text{p-value} > 2e-16$. This means that these factors standing alone make up good rating regaurdless of scaling intervention.
+
+
+
+:::
