@@ -1,4 +1,5 @@
 ---
+title: "Hans Capener - Portfolio"
 author: "Hans Capener"
 date: "`r Sys.Date()`"
 output: 
@@ -26,6 +27,17 @@ Future Improvement List
 - Add interactive graphs
 - Include Python Hobby work (TerrariaStyle game / diep.io)
 -->
+
+
+```{css, echo=F}
+.title {
+  display: none;
+}
+```
+
+
+
+
 
 ```{r message=FALSE, warning=FALSE, echo=F}
 library(tidyverse)

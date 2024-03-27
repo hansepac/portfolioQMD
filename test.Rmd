@@ -9,6 +9,12 @@ output:
       in_header: header/header.html
 ---
 
+```{css, echo=F}
+.title {
+  display: none;
+}
+```
+
 
 <!-- :::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px;"} -->
 
