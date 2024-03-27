@@ -23,10 +23,39 @@ output:
 <!-- :::: -->
 
 
-:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; text-align: center; padding=30px; background-color: rgb(245, 240, 240);"}
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; background-color: #9F2042; padding: 20px; margin: 0em -3.236em"}
+
+::: {style="margin:20px; padding: 20px:"}
+<img src="profile.jpg" alt="Profile Picture" style="border-radius: 1rem; box-shadow: rgba(0, 0, 0, 0.25) 10px 10px 30px 5px;">
+:::
+
+::: {style="margin: 20px; padding: 10px 20px; background-color: rgb(230, 225, 225);"}
+
+## Personal Overview
+
+Education:
+
+- Senior, Data Science major, Brigham Young University-Idaho
+- Minors in Mathematics and Statistics
+- Expected Graduation: April 2025
+
+Future Plans:
+
+- Intend to pursue a master's degree in Statistics, considering further studies for a PhD.
+:::
+
+::::
+
+<br>
+
+# Skill Showcase
+
+### *Click Titles* or use side nav bar
+
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; text-align: center; padding=30px; background-color: rgba(159, 32, 66, 0.4);"}
 
 ::: {style="margin: 20px 10px 10px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Data Wrangling and Visualization
+## [Data Wrangling and Visualization](#data-wrangling-and-visualization-1)
 <div style="text-align: left; text-indent: 20px">
 I am adept with R(tidyverse) and Python(pandas and seaborn) for data wrangling and visualization.
 </div>
@@ -34,14 +63,14 @@ I am adept with R(tidyverse) and Python(pandas and seaborn) for data wrangling a
 
 
 ::: {style="margin: 20px 20px 10px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Statistical Analysis
+## [Statistical Analysis](#statistical-analysis-1)
 <div style="text-align: left; text-indent: 20px">
 I can create interpretable multiple linear regression models, as well as perform many other statistical tests.
 </div>
 :::
 
 ::: {style="margin: 10px 10px 20px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### SQL
+## [SQL](#sql-1)
 <div style="text-align: left;">
 Comfortable querying large databases.
 
@@ -50,7 +79,7 @@ Familiar with database design.
 :::
 
 ::: {style="margin: 10px 20px 20px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Machine Learning
+## [Machine Learning](#machine-learning-1)
 <div style="text-align: left; text-indent: 20px">
 Familiar with Neural Networks (including CNN and RNN). Comfortable with XGBoost, RandomForest, Descision Trees, and Gradient Boosted Models. Very comfortable with all supervised learning.
 </div>

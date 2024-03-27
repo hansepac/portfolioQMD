@@ -1,5 +1,4 @@
 ---
-title: "Hans Capener - Portfolio"
 author: "Hans Capener"
 date: "`r Sys.Date()`"
 output: 
@@ -47,25 +46,46 @@ import seaborn as sns
 
 # HELLO! WELCOME TO MY PORTFOLIO!
 
-:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px;"}
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; background-color: #9F2042; padding: 20px; margin: 0em -3.236em"}
 
-::: {}
-
+::: {style="margin:20px; padding: 20px:"}
+<img src="profile.jpg" alt="Profile Picture" style="border-radius: 1rem; box-shadow: rgba(0, 0, 0, 0.25) 10px 10px 30px 5px;">
 :::
 
-::: {}
+::: {style="margin: 20px; padding: 10px 20px; background-color: rgb(230, 225, 225);"}
 
+## Hans Capener
+
+**Education:**
+
+- Senior, Data Science major, Brigham Young University-Idaho
+- Minoring in Mathematics and Statistics
+- Expected Graduation: April 2025
+
+**Future Plans:**
+
+- Intend to pursue a master's degree in Statistics, considering further studies for a PhD.
 :::
 
 ::::
 
+<br>
 
-<!-- NAVIGATION GRID -->
 
-:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; text-align: center; padding=30px; background-color: rgb(245, 240, 240);"}
+# READ ME:
+
+- The purpose of this website to display my capabilities gained from personal projects, as well as school. It has been **designed to navigate quickly to whatever is of most interest** of the viewer by using the side bar on the left.
+- **All of the code** used to generate each graph on this website **can be made visible** by clicking the small "Code" button on the right side of the screen above each visualization.
+- Some visualizations have **full analyses papers** associated with them; click the links to see them if you are interested. They will by highlighted red like [this](#skill-showcase).
+
+# Skill Showcase
+
+## *USE SIDE BAR* to navigate
+
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; text-align: center; padding=30px; background-color: rgba(159, 32, 66, 0.4);"}
 
 ::: {style="margin: 20px 10px 10px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Data Wrangling and Visualization
+## [Data Wrangling and Visualization](#data-wrangling-and-visualization-1)
 <div style="text-align: left; text-indent: 20px">
 I am adept with R(tidyverse) and Python(pandas and seaborn) for data wrangling and visualization.
 </div>
@@ -73,28 +93,29 @@ I am adept with R(tidyverse) and Python(pandas and seaborn) for data wrangling a
 
 
 ::: {style="margin: 20px 20px 10px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Statistical Analysis
+## [Statistical Analysis](#statistical-analysis-1)
 <div style="text-align: left; text-indent: 20px">
 I can create interpretable multiple linear regression models, as well as perform many other statistical tests.
 </div>
 :::
 
 ::: {style="margin: 10px 10px 20px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### SQL
-<div style="text-align: left; text-indent: 20px">
-Comfortable querying large databases. Familiar with database design.
+## [SQL](#sql-1)
+<div style="text-align: left;">
+Comfortable querying large databases.
+
+Familiar with database design.
 </div>
 :::
 
 ::: {style="margin: 10px 20px 20px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
-#### Machine Learning
+## [Machine Learning](#machine-learning-1)
 <div style="text-align: left; text-indent: 20px">
 Familiar with Neural Networks (including CNN and RNN). Comfortable with XGBoost, RandomForest, Descision Trees, and Gradient Boosted Models. Very comfortable with all supervised learning.
 </div>
 :::
 
 ::::
-
 
 <!--BATTLESHIP
 
@@ -631,14 +652,6 @@ This graph represents my 1st place model for a class-wide competition in BYU-I's
 <hr>
 
 
-### A couple things to note:
-
-- All of the code used to generate each of these graphs can be made visible by clicking the small "Show" button on the right side of the screen above each visualization.
-- Feel free to use the tabs on the left to navigate quickly to whatever intrigues you the most.
-- Some visualizations have full analysis associated with them; click the links to see them if you are interested.
-
-
-
 # 1. Data Wrangling and Visualization
 
 ## Tidyverse (R)
@@ -792,7 +805,8 @@ ggplot(year, aes(x=GDP, y=Fruit, color=Continent)) +
                               keyheight = 0.9,
                               keywidth = 0)) +
   labs(title="Fruit consumption vs. GDP per capita,  2020",
-       subtitle="Average per capita fruit consumption, measured in kilograms per year versus\ngross domestic product (GDP) per capita, measured in constant international-$",
+       subtitle="Average per capita fruit consumption, measured in kilograms per year versus
+       gross domestic product (GDP) per capita, measured in constant international-$",
        x="GDP per capita",
        y="Fruit supply per person") +
   theme_classic() +
@@ -881,10 +895,6 @@ best_airport.save("Python/best_airport.html",embed_options={'width': 400})
 ```
 
 <iframe src="Python/best_airport.html" width="500" height="250"></iframe>
-
-
-DS250 2x
-Machine Learning x2
 
 # 2. Statistical Analysis
 
