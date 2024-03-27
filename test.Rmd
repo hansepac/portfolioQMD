@@ -1,0 +1,60 @@
+---
+title: "Hans Capener - Portfolio"
+author: "Hans Capener"
+date: "`r Sys.Date()`"
+output: 
+  rmdformats::readthedown:
+    code_folding: hide
+    includes:
+      in_header: header/header.html
+---
+
+
+<!-- :::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px;"} -->
+
+<!-- ::: {} -->
+
+<!-- ::: -->
+
+<!-- ::: {} -->
+
+<!-- ::: -->
+
+<!-- :::: -->
+
+
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px; text-align: center; padding=30px; background-color: rgb(245, 240, 240);"}
+
+::: {style="margin: 20px 10px 10px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
+#### Data Wrangling and Visualization
+<div style="text-align: left; text-indent: 20px">
+I am adept with R(tidyverse) and Python(pandas and seaborn) for data wrangling and visualization.
+</div>
+:::
+
+
+::: {style="margin: 20px 20px 10px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
+#### Statistical Analysis
+<div style="text-align: left; text-indent: 20px">
+I can create interpretable multiple linear regression models, as well as perform many other statistical tests.
+</div>
+:::
+
+::: {style="margin: 10px 10px 20px 20px; padding: 20px; background-color: rgb(230, 225, 225);"}
+#### SQL
+<div style="text-align: left;">
+Comfortable querying large databases.
+
+Familiar with database design.
+</div>
+:::
+
+::: {style="margin: 10px 20px 20px 10px; padding: 20px; background-color: rgb(230, 225, 225);"}
+#### Machine Learning
+<div style="text-align: left; text-indent: 20px">
+Familiar with Neural Networks (including CNN and RNN). Comfortable with XGBoost, RandomForest, Descision Trees, and Gradient Boosted Models. Very comfortable with all supervised learning.
+</div>
+:::
+
+::::
+

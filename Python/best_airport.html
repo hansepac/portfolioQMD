@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.14.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-67fdae883a9cfa061d3cc77380568ad2"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "airport_code", "legend": null, "scale": {"scheme": "tealblues"}, "type": "nominal"}, "x": {"field": "delay_rating", "title": "Delay Rating", "type": "quantitative"}, "y": {"field": "airport_code", "sort": "-x", "title": "Airport Code", "type": "nominal"}}, "title": {"text": "Airports Rated by Delay", "subtitle": "The higher the rating, the worse airport"}, "$schema": "https://vega.github.io/schema/vega-lite/v5.14.1.json", "datasets": {"data-67fdae883a9cfa061d3cc77380568ad2": [{"airport_code": "SFO", "total_minutes_delayed": 26550493, "total_delays": 425604, "total_flights": 1630945, "total_hrs_delayed": 442508.2166666667, "ave_hrs_delayed": 1.039718180906821, "proportion_delayed": 0.2609554583385706, "delay_rating": 0.27132013444148434}, {"airport_code": "ORD", "total_minutes_delayed": 56356129, "total_delays": 830825, "total_flights": 3597588, "total_hrs_delayed": 939268.8166666667, "ave_hrs_delayed": 1.130525461639535, "proportion_delayed": 0.23093945165483096, "delay_rating": 0.26108293019285883}, {"airport_code": "ATL", "total_minutes_delayed": 53983926, "total_delays": 902443, "total_flights": 4430047, "total_hrs_delayed": 899732.1, "ave_hrs_delayed": 0.9969960429633783, "proportion_delayed": 0.20370957689613678, "delay_rating": 0.2030976420791924}, {"airport_code": "IAD", "total_minutes_delayed": 10283478, "total_delays": 168467, "total_flights": 851571, "total_hrs_delayed": 171391.3, "ave_hrs_delayed": 1.017358295689957, "proportion_delayed": 0.19783083266104648, "delay_rating": 0.20126483875096732}, {"airport_code": "DEN", "total_minutes_delayed": 25173381, "total_delays": 468519, "total_flights": 2513974, "total_hrs_delayed": 419556.35, "ave_hrs_delayed": 0.8954948465270351, "proportion_delayed": 0.18636588922558467, "delay_rating": 0.1668896933699394}, {"airport_code": "SAN", "total_minutes_delayed": 8276248, "total_delays": 175132, "total_flights": 917862, "total_hrs_delayed": 137937.46666666667, "ave_hrs_delayed": 0.7876200047202492, "proportion_delayed": 0.19080428212519965, "delay_rating": 0.1502812695880935}, {"airport_code": "SLC", "total_minutes_delayed": 10123371, "total_delays": 205160, "total_flights": 1403384, "total_hrs_delayed": 168722.85, "ave_hrs_delayed": 0.8223964223045428, "proportion_delayed": 0.1461894962462163, "delay_rating": 0.12022571869139168}]}};
+      var embedOpt = {"width": 400, "mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>

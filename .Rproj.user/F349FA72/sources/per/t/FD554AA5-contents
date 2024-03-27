@@ -1,0 +1,306 @@
+---
+title: "Hans Capener - Portfolio"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+##### Hello! Welcome to my Portfolio.
+
+Quick Tip:
+
+- All of the code used to generate each of these graphs can be made visible by clicking the small "Show" button on the right side of the screen above each visualization.
+
+
+```{r message=FALSE, warning=FALSE, echo=F}
+library(tidyverse)
+library(pander)
+library(readxl)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = TRUE)
+```
+
+
+# {.tabset}
+
+## Data Wrangling
+
+TABLE OF CONTENTS
+
+### {.tabset .tabset-pills}
+
+#### TIDYVERSE (R)
+
+DS350 2x
+
+#### PANDAS (Python)
+
+DS250 2x
+
+## Visualization
+
+TABLE OF CONTENTS
+
+### {.tabset .tabset-pills}
+
+#### GGPLOT
+
+DS350 2x
+
+#### SEABORN
+
+Machine Learning x2
+
+## Statistical Analysis
+
+### {.tabset .tabset-pills}
+
+#### Linear Regression
+
+When should I sell my Honda Accord? Which Honda Accord should I buy?
+The "Buying Point" represents a Honda Accord for sale on [KSL](https://cars.ksl.com/) which, if bought and sold when reaching 75,000 miles, would allow you to drive it for 39,761 miles and gain $\approx 2$ cents per mile on its selling price. For more info [...click here to see the full analysis]("LinearRegression/CarSellingPrice/CarSellingPrice.html")
+
+```{r}
+car_raw <- read_csv('LinearRegression/CarSellingPrice/Honda_Accord_Sales_Data.csv')
+car <- car_raw %>% 
+  mutate(
+    Year = as.factor(Year),
+    generation = case_when(
+      Year %in% c(2013,2014,2015,2016,2017) ~ '2013-17',
+      TRUE ~ '2018-22'
+    ),
+    Miles = Miles / 1000,
+    Cost = Cost / 1000
+  )
+
+car.lm <- lm(log(Cost)~Miles, data=car)
+b <- coef(car.lm)
+mylm <- lm(Cost~Miles, data=car)
+confintv <- exp(predict(car.lm, interval="confidence"))
+predintv <- exp(predict(car.lm, interval="prediction"))
+
+buy_point <- data.frame(Miles=35.239, Cost=14.971, generation='2013-17')
+sell_point <- data.frame(Miles=75, Cost=15.83134, generation='2013-17')
+
+ggplot(car, aes(x=Miles, y=Cost, color=generation)) +
+  geom_ribbon(aes(ymin=confintv[,2], ymax=confintv[,3]),
+              alpha=0.1, fill='skyblue', color='skyblue3') +
+  geom_ribbon(aes(ymin=predintv[,2], ymax=predintv[,3]),
+              alpha=0.1, fill='firebrick3', color='firebrick') +
+  geom_point() +
+  geom_text(aes(label='Selling Point, $15,831'),
+            x=105, y=17, color='hotpink') +
+  geom_text(aes(label='Buying Point, $14,971'),
+            x=22, y=16, color='skyblue') +
+  geom_segment(data=buy_point, xend=75, yend=15.83134) +
+  geom_point(data=buy_point, size=3, color='skyblue2', ) +
+  stat_function(fun=function(x) exp(b[1]+b[2]*x), aes(color='log(Cost)')) +
+  geom_point(data=sell_point, size=3, color='hotpink') +
+  theme_bw() +
+  labs(
+    title="Honda Accord Offers on KSL.com",
+    y="Sales Price (in thousands of $)",
+    x="Miles (in thousands of mi)"
+  )
+```
+
+
+#### Multiple Linear Regression
+
+House Sale Price Prediction
+[...click here for the full analysis]("LinearRegression/MultipleLR/HouseSellingPrices.html")
+
+```{r,warning=F}
+houses <- read.csv("LinearRegression/MultipleLR/train.csv", header=T, stringsAsFactors = T)
+  
+# NA fill "No ____"
+correctNAlist <- c("Alley", "Fence", "PoolQC", "FireplaceQu",
+                   "MiscFeature", "GarageQual",
+                   "GarageCond","GarageFinish", "GarageType",
+                   "BsmtQual", "BsmtCond", "BsmtExposure", "BsmtFinType1",
+                   "BsmtFinType2", "MasVnrType")
+for (item in correctNAlist) {
+  houses <- houses |> 
+    mutate(
+      !!item := as.character(!!sym(item)),
+      !!item := replace_na(!!sym(item), paste("No_", item)),
+      !!item := as.factor(!!sym(item))
+    )
+}
+
+# NA fill 0
+fill_0 <- c("LotFrontage", "MasVnrArea")
+for (item in fill_0) {
+  houses <- houses |> 
+    mutate(
+      !!item := replace_na(!!sym(item), 0)
+    )
+}
+
+houses <- houses |> 
+  mutate(
+    Electrical = replace_na(Electrical, "SBrkr"),
+    GarageYrBlt = ifelse(GarageQual == "No_ GarageQual", 0, GarageYrBlt),
+    TotalSF = TotalBsmtSF + X1stFlrSF + X2ndFlrSF,
+    TotalSF = ifelse(TotalSF > 6000, mean(TotalSF), TotalSF),
+    PercBsmtFin = (TotalBsmtSF - BsmtUnfSF) / BsmtUnfSF,
+    PercBsmtFin = ifelse(is.na(PercBsmtFin) |
+                           PercBsmtFin=="Inf", 0, PercBsmtFin),
+    Has2nd = ifelse(X2ndFlrSF == 0, 1, 0),
+    Has2nd = as.factor(Has2nd),
+    HasBsmt = ifelse(TotalBsmtSF == 0, 1, 0),
+    HasBsmt = as.factor(HasBsmt),
+    BsmtExcellent = ifelse(BsmtQual == "Ex", 1, 0),
+    GarageCar3 = ifelse(GarageCars == 3, 1, 0),
+    #### BOOLEAN ####
+      # 2nd Floor
+    X2ndFlr = ifelse(X2ndFlrSF > 0, 1, 0),
+    RichNeigh = case_when(
+      Neighborhood %in% c("StoneBr","NridgHt","NoRidge") ~ 18.6342,
+      Neighborhood %in% c("Blmngtn", "ClearCr", "CollgCr",
+                          "Crawfor", "Gilbert", "NWAmes",
+                          "SawyerW", "Somerst", "Timber", "Veenker") ~ 13.2532,
+      T ~ 7.3327
+    ),
+    KitchenQ = case_when(
+      KitchenQual == "Ex" ~ 3.28555,
+      KitchenQual == "Gd" ~ -1.16439,
+      KitchenQual == "TA" ~ -1.88592,
+      KitchenQual == "Fa" ~ -2.22990,
+    ),
+    OverallQ = case_when(
+      OverallQual == 1 ~ 0.4709,
+      OverallQual == 2 ~ -5.5332,
+      OverallQual == 3 ~ 18.5539,
+      OverallQual == 4 ~ 28.4397,
+      OverallQual == 5 ~ 34.9930,
+      OverallQual == 6 ~ 43.1099,
+      OverallQual == 7 ~ 53.9437,
+      OverallQual == 8 ~ 65.5431,
+      OverallQual == 9 ~ 82.3895,
+      OverallQual == 10 ~ 93.5527
+    ),
+    customX = 42.872*(TotalSF) +
+      9658.661*(KitchenQ) +
+      1759.385*(OverallQ) +
+      4113.104*(RichNeigh),
+    megaSwitch = ifelse(MSZoning %in% c("RL", "FV", "RH"), 1, 0)
+  )
+
+set.seed(122)
+
+num_rows <- 1000 #1460 total
+keep <- sample(1:nrow(houses), num_rows)
+
+train <- houses[keep, ] #Use this in the lm(..., data=mytrain)
+
+test <- houses[-keep, ] #Use this in the predict(..., newdata=mytest)
+
+final.lm <- lm(SalePrice~customX + customX:GarageCar3 + GarageCar3,data=train)
+
+b <- coef(final.lm)
+
+ggplot(train, aes(x=customX, y=SalePrice, color=as.factor(GarageCar3))) +
+  geom_point(alpha=0.3) +
+  scale_y_continuous(expand=c(0,0), limits = c(0, 630000), labels=c("$0", "$200k", "$400k", "600k")) +
+  scale_x_continuous(labels=c("0", "100k", "200k", "300k", "400k", "500k")) +
+  scale_color_manual(values = c("skyblue", "firebrick"), labels = c("No", "Yes")) +
+  stat_function(fun=function(x) b[1] + b[2]*x, color="skyblue3") + 
+  stat_function(fun=function(x) (b[1] + b[3]) + (b[2] + b[4])*x, color="firebrick3") + 
+  labs(title="Can you Predict a House's Sale Price",
+       subtitle="Just by knowing things about the house?",
+       x="Custom X Variable",
+       y="Sale Price ($)",
+       color="Does the house have \n    a 3 car garage?") +
+  theme_classic() +
+  theme(
+    panel.grid.major = element_line(color='gray95', linetype='dashed'),
+    panel.grid.minor = element_line(color='gray95', linetype='dashed'),
+    axis.line.y = element_line(color='gray90', linetype='dashed'),
+    axis.ticks.y = element_blank()
+  )
+```
+
+Here is the summary of the multiple linear regression.
+
+```{r}
+summary(final.lm) |> 
+  pander()
+```
+
+After running the model on a validation set of data, the Adjusted R-squared only dropped by 0.04, showing that this model does work well at predicting new data. It should be noted that this model can predict within $60k of the actual sales price 95% of the time.
+
+```{r}
+y <- predict(final.lm, newdata=test)
+
+ybar <- mean(test$SalePrice)
+
+SSTO <- sum( (test$SalePrice - ybar)^2 )
+
+# Compute SSE for each model using SalePrice - yhat
+SSE <- sum( (test$SalePrice - y)^2 )
+
+# Compute R-squared for each
+rs <- 1 - SSE/SSTO
+
+
+n <- length(test$SalePrice) #sample siz
+p <- length(coef(final.lm))
+rsa <- 1 - (n-1)/(n-p)*SSE/SSTO
+
+my_output_table2 <- data.frame(Model = c("MyLM"), `Original R2` = c(summary(final.lm)$r.squared), `Orig. Adj. R-squared` = c(summary(final.lm)$adj.r.squared), `Validation R-squared` = c(rs), `Validation Adj. R^2` = c(rsa))
+
+colnames(my_output_table2) <- c("Model", "Original $R^2$", "Original Adj. $R^2$", "Validation $R^2$", "Validation Adj. $R^2$")
+
+knitr::kable(my_output_table2, escape=TRUE, digits=4)
+```
+
+
+
+
+
+#### Other Statistical Methods
+
+
+
+
+## SQL Querying
+
+TABLE OF CONTENTS
+
+## Machine Learning
+
+All of my Machine Learning experience has been in Python using the Tensorflow-Keras library. I am comfortable with:
+
+- Descision Trees
+- Random Forest
+- Gradient Boost
+- XGBoost
+- Neural Networks
+  - Typical "Feed-Forward" Network
+  - Convolutional Neural Network (CNN)
+    - Image Classification
+  - Recurrent Neural Network (RNN)
+    - Text Generation
+    
+Here are some examples of my work
+
+### {.tabset .tabset-pills}
+
+#### XGBOOST
+
+#### NN
+
+#### CNN
+
+#### RNN
+
+
+
+
+
+
+
+
+
+
